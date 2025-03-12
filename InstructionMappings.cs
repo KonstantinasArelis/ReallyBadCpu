@@ -5,7 +5,8 @@ public static class InstructionMappings
         {"Add", "00000"},
         {"Sub", "00001"},
         {"Mul", "00010"},
-        {"Div", "00011"}
+        {"Div", "00011"},
+        {"Halt", "11111"}
     };
 
     public static readonly Dictionary<string, string> RegisterToBinaryCode = new Dictionary<string, string>()
@@ -18,6 +19,15 @@ public static class InstructionMappings
         {"R5", "0101"},
         {"R6", "0110"},
         {"R7", "0111"}
+    };
+
+    public static readonly Dictionary<string, string> InstructionNameToInstructionType = new Dictionary<string, string>()
+    {
+        {"Add", "Arithmetic"},
+        {"Sub", "Arithmetic"},
+        {"Div", "Arithmetic"},
+        {"Mul", "Arithmetic"},
+        {"Halt", "Shutdown"},
     };
 
     public static readonly Dictionary<string, string> BinaryCodeToInstruction; // Declare reverse dictionary

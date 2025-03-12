@@ -12,25 +12,54 @@ static class Cpu
         {"R4", 0},
         {"R5", 0},
         {"R6", 0},
-        {"R7", 0}
+        {"R7", 0},
+        {"IP", 0}
     };
 
     public static void executeBinary(string binaryInput)
     {
-        int[] segmentSizes = {5,4,4,4,4}; // assume aritmetic instruction
-        List<string> segmentedBinary = StringSplitter.SplitStringByLengths(binaryInput, segmentSizes);
-        
-        string instructionName = InstructionMappings.BinaryCodeToInstruction[segmentedBinary[0]];
-        
-        if(instructionName == "Add")
-        {
-            string result = InstructionMappings.BinaryCodeToRegister[segmentedBinary[1]];
-            string operand1 = InstructionMappings.BinaryCodeToRegister[segmentedBinary[2]];
-            string operand2 = InstructionMappings.BinaryCodeToRegister[segmentedBinary[4]];
-            
-            registers[result] = registers[operand1] + registers[operand2];
-        }
+        string currentInstructionBinary;
+        string instructionName;
+        string instructionType;
 
+        while(true)
+        {
+            currentInstructionBinary = binaryInput.Substring(registers["IP"] * 31, 32); // take first 32 bits
+            instructionName = InstructionMappings.BinaryCodeToInstruction[currentInstructionBinary.Substring(0, 5)]; // translate first 5 bits to instruction name
+            instructionType = InstructionMappings.InstructionNameToInstructionType[instructionName];
+            switch(instructionType)
+            {
+                case "Arithmetic":
+                    int[] segmentSizes = {5,4,4,4,4};  // opcode, rd, rn, ra, rs (Ignoring Cond field for now)
+                    List<string> segmentedBinary = StringSplitter.SplitStringByLengths(binaryInput, segmentSizes);
+                    
+                    string result = InstructionMappings.BinaryCodeToRegister[segmentedBinary[1]];
+                    string operand1 = InstructionMappings.BinaryCodeToRegister[segmentedBinary[2]];
+                    string operand2 = InstructionMappings.BinaryCodeToRegister[segmentedBinary[4]];
+                    
+                    switch(instructionName)
+                    {
+                        case "Add":
+                            registers[result] = registers[operand1] + registers[operand2];
+                            break;
+                        case "Sub":
+                            registers[result] = registers[operand1] - registers[operand2];
+                            break;
+                        case "Mul":
+                            registers[result] = registers[operand1] * registers[operand2];
+                            break;
+                        case "Div":
+                            registers[result] = registers[operand1] / registers[operand2];
+                            break;
+                    }
+                break;
+                case "Shutdown":
+                    return;
+                break;
+            }
+            registers["IP"]++;
+        }
+        
     }
 
     public static void printRegisters()

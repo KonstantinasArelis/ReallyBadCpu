@@ -1,7 +1,8 @@
 static class Assembler
 {
-    public static string assemble(String instructionsString)
+    public static string assemble(string instructionsString)
     {
+        string binaryOutput = "";
         IList<string> instructionWords = instructionsString.Split();
 
         string opcode = "defaultValue";
@@ -11,44 +12,57 @@ static class Assembler
         string Rs = "defaultValue";
 
         string nextExpectedThing = "instructionName";
+        string currentInstructionType = "start";
 
         foreach(string instructionWord in instructionWords)
         {
-            if(nextExpectedThing == "instructionName"){
-                opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
-                nextExpectedThing = "Rd";
-                continue;
+            if(currentInstructionType == "start"){
+                currentInstructionType = InstructionMappings.InstructionNameToInstructionType[instructionWord];
             }
-
-            if(nextExpectedThing == "Rd")
+            switch(currentInstructionType)
             {
-                Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                nextExpectedThing = "Rn";
-                continue;
-            }
+                case "Arithmetic":
+                    switch(nextExpectedThing)
+                    {
+                        case "instructionName":
+                        opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
+                        nextExpectedThing = "Rd";
+                        continue;
 
-            if(nextExpectedThing == "Rn")
-            {
-                Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                nextExpectedThing = "Ra";
-                continue;
-            }
+                        case "Rd":
+                        Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                        nextExpectedThing = "Rn";
+                        continue;
 
-            if(nextExpectedThing == "Ra")
-            {
-                Ra = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                nextExpectedThing = "Rs";
-                continue;
-            }
+                        case "Rn":
+                        Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                        nextExpectedThing = "Ra";
+                        continue;
 
-            if(nextExpectedThing == "Rs")
-            {
-                nextExpectedThing = "instructionName";
-                Rs = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                continue;
+                        case "Ra":
+                        Ra = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                        nextExpectedThing = "Rs";
+                        continue;
+
+                        case "Rs":
+                        nextExpectedThing = "instructionName";
+                        Rs = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                        binaryOutput += opcode + Rd + Rn + Ra + Rs + "0000000000"; // padding to bloat to 32 bits
+                        currentInstructionType = "start";
+                        continue;
+                    }
+                break;
+                case "Shutdown":
+                    switch(instructionWord)
+                    {
+                        case "Halt":
+                            binaryOutput += InstructionMappings.InstructionToBinaryCode[instructionWord] + "0000000000000000000000000000";
+                        break;
+                    }
+                break;
             }
         }
-
-        return opcode + Rd + Rn + Ra + Rs;
+        
+        return binaryOutput;
     }
 }

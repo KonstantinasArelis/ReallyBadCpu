@@ -4,7 +4,7 @@
 
 Cpu.printRegisters();
 
-string assemblerInput = "Add R0 R1 R2 R3";
+string assemblerInput = "Add R0 R1 R2 R3 Sub R0 R1 R2 R3 Halt";
 
 Console.WriteLine("Assembler input: " + assemblerInput);
 
