@@ -1,17 +1,12 @@
-﻿// Cia labai rough pirmas bandymas. Kolkas veikia tik su ADD ir be Cond lauku.
-// Taip pat cpu vykdo tik pacia pirma instrukcija ir tada pasiduoda.
-// R0 yra destination, kuriame bus sudeti R1 ir R3
+﻿Cpu.printRegisters();
 
-Cpu.printRegisters();
-
-string assemblerInput = "Add R0 R1 R2 R3 Sub R0 R1 R2 R3 Halt";
+string assemblerInput = "Add R0 R1 R2 R3 Add R4 R1 R2 R2 Ldr R6 R7 Halt";
+string memory = "111111111111111111111111111111111111111111111111";
 
 Console.WriteLine("Assembler input: " + assemblerInput);
-
 string assemblerOutput = Assembler.assemble(assemblerInput);
 
 Console.WriteLine("Cpu input: " + assemblerOutput);
-
-Cpu.executeBinary(assemblerOutput);
+Cpu.executeBinary(assemblerOutput, memory);
 
 Cpu.printRegisters();

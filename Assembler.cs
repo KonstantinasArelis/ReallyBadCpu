@@ -56,9 +56,30 @@ static class Assembler
                     switch(instructionWord)
                     {
                         case "Halt":
-                            binaryOutput += InstructionMappings.InstructionToBinaryCode[instructionWord] + "0000000000000000000000000000";
+                            binaryOutput += InstructionMappings.InstructionToBinaryCode[instructionWord] + "000000000000000000000000000";  // padding to bloat to 32 bits
                         break;
                     }
+                break;
+                case "DataProcessing":
+                        switch(nextExpectedThing)
+                        {
+                            case "instructionName":
+                            opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
+                            nextExpectedThing = "Rd";
+                            continue;
+
+                            case "Rd":
+                            Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            nextExpectedThing = "Rn";
+                            continue;
+
+                            case "Rn":
+                            nextExpectedThing = "instructionName";
+                            Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            binaryOutput += opcode + Rd + Rn + "000000000000000000";  // padding to bloat to 32 bits
+                            currentInstructionType = "start";
+                            continue;
+                        }
                 break;
             }
         }

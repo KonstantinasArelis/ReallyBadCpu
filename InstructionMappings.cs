@@ -6,6 +6,7 @@ public static class InstructionMappings
         {"Sub", "00001"},
         {"Mul", "00010"},
         {"Div", "00011"},
+        {"Ldr", "00100"},
         {"Halt", "11111"}
     };
 
@@ -28,6 +29,7 @@ public static class InstructionMappings
         {"Div", "Arithmetic"},
         {"Mul", "Arithmetic"},
         {"Halt", "Shutdown"},
+        {"Ldr", "DataProcessing"},
     };
 
     public static readonly Dictionary<string, string> BinaryCodeToInstruction; // Declare reverse dictionary
