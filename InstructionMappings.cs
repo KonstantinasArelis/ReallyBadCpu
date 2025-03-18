@@ -12,14 +12,18 @@ public static class InstructionMappings
 
     public static readonly Dictionary<string, string> RegisterToBinaryCode = new Dictionary<string, string>()
     {
-        {"R0", "0000"},
-        {"R1", "0001"},
-        {"R2", "0010"},
-        {"R3", "0011"},
-        {"R4", "0100"},
-        {"R5", "0101"},
-        {"R6", "0110"},
-        {"R7", "0111"}
+        {"R0",  "00000"},
+        {"R1",  "00001"},
+        {"R2",  "00010"},
+        {"R3",  "00011"},
+        {"R4",  "00100"},
+        {"R5",  "00101"},
+        {"R6",  "00110"},
+        {"R7",  "00111"},
+        {"PC",  "01000"}, // Program Counter Register
+        {"MAR", "01001"}, // Memory Address Register
+        {"MDR", "01010"}, // Memory Data Register
+        {"IR",  "01011"}, // Instruction Register
     };
 
     public static readonly Dictionary<string, string> InstructionNameToInstructionType = new Dictionary<string, string>()

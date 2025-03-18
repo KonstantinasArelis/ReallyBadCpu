@@ -43,11 +43,11 @@ static class Assembler
                         Ra = InstructionMappings.RegisterToBinaryCode[instructionWord];
                         nextExpectedThing = "Rs";
                         continue;
-
                         case "Rs":
                         nextExpectedThing = "instructionName";
                         Rs = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                        binaryOutput += opcode + Rd + Rn + Ra + Rs + "0000000000"; // padding to bloat to 32 bits
+                        binaryOutput += opcode + Rd + Rn + Ra + Rs + "0000000"; // padding to bloat to 32 bits
+                        Console.WriteLine("Assembler assembled: " + opcode + Rd + Rn + Ra + Rs + "0000000");
                         currentInstructionType = "start";
                         continue;
                     }
@@ -57,6 +57,7 @@ static class Assembler
                     {
                         case "Halt":
                             binaryOutput += InstructionMappings.InstructionToBinaryCode[instructionWord] + "000000000000000000000000000";  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + InstructionMappings.InstructionToBinaryCode[instructionWord] + "000000000000000000000000000");
                         break;
                     }
                 break;
@@ -72,12 +73,13 @@ static class Assembler
                             Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
                             nextExpectedThing = "Rn";
                             continue;
-
                             case "Rn":
                             nextExpectedThing = "instructionName";
                             Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
-                            binaryOutput += opcode + Rd + Rn + "000000000000000000";  // padding to bloat to 32 bits
+                            binaryOutput += opcode + Rd + Rn + "00000000000000000";  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + opcode + Rd + Rn + "00000000000000000");
                             currentInstructionType = "start";
+                            
                             continue;
                         }
                 break;
