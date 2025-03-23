@@ -29,9 +29,9 @@ public static class MemoryAccessUnit
         return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2), Convert.ToInt32(GlobalConstants.instructionSize, 2));
     }
 
-    public static void setMemory(string _memory, int startingBitIndex)
+    public static void setMemory(string _memory, int startingByteIndex)
     {
-        memory = ReplaceStringPart(memory, _memory, startingBitIndex);
+        memory = ReplaceStringPart(memory, _memory, startingByteIndex * 8);
     }
 
     public static string ReplaceStringPart(string originalString, string replacementString, int startIndex)

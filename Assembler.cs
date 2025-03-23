@@ -1,6 +1,6 @@
-static class Assembler
+public class Assembler
 {
-    public static string assemble(string instructionsString)
+    public string assemble(string instructionsString)
     {
         string binaryOutput = "";
         IList<string> instructionWords = instructionsString.Split();

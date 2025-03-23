@@ -41,11 +41,7 @@ public static class ControlUnit
         try {
             currentInstruction = InstructionMappings.BinaryCodeToInstruction[opcode];
         } catch (Exception e){
-            currentInstruction = "InvalidInstruction";
-            currentInstructionType = "Interrupt";
-            RegisterFile.registers["R5"] = "0";
-            registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"];
-            Console.WriteLine("INVALID INSTRUCTION INTERRUPT");
+            interruptRoutine();
             return;
         }
 
@@ -65,6 +61,16 @@ public static class ControlUnit
                 registers4["Ra"] = segmentedBinary[3];
                 registers4["Rs"] = segmentedBinary[4];
 
+                try {
+                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                    var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
+                    var temp3 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Ra"]]];
+                    var temp4 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]];
+                } catch (Exception e){
+                    interruptRoutine();
+                    return;
+                }
+
                 ArithmeticLogicUnit.prepare(opcode);
             break;
             case "DataProcessing":
@@ -74,12 +80,26 @@ public static class ControlUnit
                 registers4["Rd"] = segmentedBinary2[1];
                 registers4["Rn"] = segmentedBinary2[2];
 
+                try {
+                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                    var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
+                } catch (Exception e){
+                    interruptRoutine();
+                    return;
+                }
+
                 MemoryAccessUnit.prepare(opcode);
             break;
             case "Branching":
                 int[] segmentSizes3 = {5,5, 22}; // opcode, Rd
                 List<string> segmentedBinary3 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes3);
                 registers4["Rd"] = segmentedBinary3[1];
+                try {
+                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                } catch (Exception e){
+                    interruptRoutine();
+                    return;
+                }
             break;
             case "Moving":
                 switch (currentInstruction)
@@ -89,12 +109,25 @@ public static class ControlUnit
                         List<string> segmentedBinary4 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes4);
                         registers4["Rd"] = segmentedBinary4[1];
                         registers4["Imm"] = segmentedBinary4[2];
+                        try {
+                            var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                        } catch (Exception e){
+                            interruptRoutine();
+                            return;
+                        }
                     break;
                     case "Movr":
                         int[] segmentSizes5 = {5,5,5, 17}; // opcode, Rd, Rn
                         List<string> segmentedBinary5 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes5);
                         registers4["Rd"] = segmentedBinary5[1];
                         registers4["Rn"] = segmentedBinary5[2];
+                        try {
+                            var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                            var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
+                        } catch (Exception e){
+                            interruptRoutine();
+                            return;
+                        }
                     break;
                 }
             break;
@@ -117,6 +150,7 @@ public static class ControlUnit
                 RegisterFile.registers["PC"] = Convert.ToString(Convert.ToInt32(RegisterFile.registers["IVTP"],2) * 8 + Convert.ToInt32(GlobalConstants.instructionSize, 2) * Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2),2);
             break;
             case "Branching":
+            RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = MemoryAccessUnit.PadLeftToLength(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]], 32);
                 switch (currentInstruction)
                 {
                     case "Jmp":
@@ -169,5 +203,15 @@ public static class ControlUnit
             }
             
         }
+    }
+
+    private static void interruptRoutine()
+    {
+        currentInstruction = "InvalidInstruction";
+            currentInstructionType = "Interrupt";
+            RegisterFile.registers["R5"] = "0";
+            registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"];
+            Console.WriteLine("INVALID INSTRUCTION INTERRUPT");
+            return;
     }
 }
