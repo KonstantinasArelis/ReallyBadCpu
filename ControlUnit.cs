@@ -43,7 +43,9 @@ public static class ControlUnit
         } catch (Exception e){
             currentInstruction = "InvalidInstruction";
             currentInstructionType = "Interrupt";
+            RegisterFile.registers["R5"] = "0";
             registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"];
+            Console.WriteLine("INVALID INSTRUCTION INTERRUPT");
             return;
         }
 
@@ -75,7 +77,7 @@ public static class ControlUnit
                 MemoryAccessUnit.prepare(opcode);
             break;
             case "Branching":
-                int[] segmentSizes3 = {5,5, 22}; // Rd
+                int[] segmentSizes3 = {5,5, 22}; // opcode, Rd
                 List<string> segmentedBinary3 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes3);
                 registers4["Rd"] = segmentedBinary3[1];
             break;
@@ -83,13 +85,13 @@ public static class ControlUnit
                 switch (currentInstruction)
                 {
                     case "Movi":
-                        int[] segmentSizes4 = {5,5,22}; // Rd, imm22
+                        int[] segmentSizes4 = {5,5,16, 6}; // opcode, Rd, imm16
                         List<string> segmentedBinary4 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes4);
                         registers4["Rd"] = segmentedBinary4[1];
                         registers4["Imm"] = segmentedBinary4[2];
                     break;
                     case "Movr":
-                        int[] segmentSizes5 = {5,5,5, 17}; // Rd, Rn
+                        int[] segmentSizes5 = {5,5,5, 17}; // opcode, Rd, Rn
                         List<string> segmentedBinary5 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes5);
                         registers4["Rd"] = segmentedBinary5[1];
                         registers4["Rn"] = segmentedBinary5[2];
@@ -112,7 +114,7 @@ public static class ControlUnit
                 return;
             case "Interrupt":
                 // Rn will hold the index of the interrupt vector in the table.
-                RegisterFile.registers["PC"] = Convert.ToString(Convert.ToInt32(RegisterFile.registers["IVTP"],2) + Convert.ToInt32(GlobalConstants.instructionSize, 2) * Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2),2);
+                RegisterFile.registers["PC"] = Convert.ToString(Convert.ToInt32(RegisterFile.registers["IVTP"],2) * 8 + Convert.ToInt32(GlobalConstants.instructionSize, 2) * Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2),2);
             break;
             case "Branching":
                 switch (currentInstruction)
@@ -138,13 +140,13 @@ public static class ControlUnit
                 switch(currentInstruction)
                 {
                     case "Movi":
+                        
                         RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = registers4["Imm"];
                     break;
                     case "Movr":
-                        RegisterFile.registers[InstructionMappings.BinaryCodeToRegister["Rd"]] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister["Rn"]]; 
+                        RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]]; 
                     break;
                 }
-                
             break;
         }
     }
@@ -153,7 +155,19 @@ public static class ControlUnit
     {
         if(currentInstructionType == "DataProcessing")
         {
-            RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = MemoryAccessUnit.execute(registers4["Rn"]);
+            switch(currentInstruction)
+            {
+                //Rn - memory address
+                case "Ldr":
+                    RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = MemoryAccessUnit.execute(registers4["Rd"], registers4["Rn"]);
+                break;
+                //Rd - data
+                //Rn - memory address
+                case "Str":
+                    MemoryAccessUnit.execute(registers4["Rd"], registers4["Rn"]);
+                break;
+            }
+            
         }
     }
 }

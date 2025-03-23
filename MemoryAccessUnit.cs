@@ -2,7 +2,7 @@ using System.Text;
 
 public static class MemoryAccessUnit
 {
-    private static string memory = new string('0', 1024);
+    private static string memory = new string('0', 2048);
     private static string instruction = "";
     
     public static void prepare(string opcode)
@@ -10,14 +10,14 @@ public static class MemoryAccessUnit
         instruction = InstructionMappings.BinaryCodeToInstruction[opcode];
     }
 
-    public static string execute(string Rn)
+    public static string execute(string Rd, string Rn)
     {
         switch (instruction)
         {
             case "Ldr":
                 return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2), Convert.ToInt32(GlobalConstants.instructionSize, 2));
             case "Str":
-                // TODO
+                memory = ReplaceStringPart(memory, RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rd]], Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8);
                 return "";
             
         }
@@ -57,5 +57,63 @@ public static class MemoryAccessUnit
         }
 
         return sb.ToString();
+    }
+
+    public static void PrintBinaryMemory(int bitsPerGroup = 8)
+    {
+
+        string binaryString = memory;
+        if (string.IsNullOrEmpty(binaryString))
+        {
+            Console.WriteLine("Binary string is empty.");
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(binaryString, "^[01]+$"))
+        {
+            Console.WriteLine("Invalid binary string. It should only contain '0' and '1'.");
+            return;
+        }
+
+        if (bitsPerGroup <= 0)
+        {
+            Console.WriteLine("Bits per group must be a positive integer.");
+            return;
+        }
+
+        StringBuilder formattedOutput = new StringBuilder();
+        int length = binaryString.Length;
+
+        for (int i = 0; i < length; i += bitsPerGroup)
+        {
+            int remainingBits = Math.Min(bitsPerGroup, length - i);
+            string chunk = binaryString.Substring(i, remainingBits);
+
+            formattedOutput.Append(chunk);
+
+            // If we've processed a full group, add a separator
+            if (remainingBits == bitsPerGroup && i + bitsPerGroup < length)
+            {
+                formattedOutput.Append(" ");
+            }
+        }
+        Console.WriteLine("Current Memory:");
+        Console.WriteLine(formattedOutput.ToString());
+    }
+
+    public static string PadLeftToLength(this string input, int targetLength)
+    {
+        if (input == null)
+        {
+            return new string('0', targetLength);
+        }
+
+        if (input.Length >= targetLength)
+        {
+            return input; // No padding needed or already longer
+        }
+
+        int paddingNeeded = targetLength - input.Length;
+        return new string('0', paddingNeeded) + input;
     }
 }

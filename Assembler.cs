@@ -120,9 +120,10 @@ static class Assembler
                             continue;
                         case "Imm27":
                             nextExpectedThing = "instructionName";
-                            string imm22 = instructionWord;
-                            binaryOutput += opcode + Rd + imm22;  // padding to bloat to 32 bits
-                            Console.WriteLine("Assembler assembled: " + opcode + Rd + imm22);
+                            string imm16 = MemoryAccessUnit.PadLeftToLength(instructionWord, 16);
+
+                            binaryOutput += opcode + Rd + imm16 + "000000";
+                            Console.WriteLine("Assembler assembled: " + opcode + Rd + imm16 + "000000");
                             currentInstructionType = "start";
                             continue;
                         case "Rn":
