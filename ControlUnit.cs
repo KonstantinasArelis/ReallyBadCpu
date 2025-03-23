@@ -6,6 +6,7 @@ public static class ControlUnit
         {"Rn", "0"}, // operand 1 register pointer
         {"Ra", "0"}, // ??
         {"Rs", "0"}, // operand 2 register pointer
+        {"Imm", "0"},
     };
 
     private static string currentInstruction = "";
@@ -15,8 +16,8 @@ public static class ControlUnit
     {
         // signal memory access unit (MAU) -> update PC
         RegisterFile.registers["MAR"] =  RegisterFile.registers["PC"]; // update MAR
-        RegisterFile.registers["PC"] =  Convert.ToString(Convert.ToInt32(RegisterFile.registers["PC"], 2) + GlobalConstants.instructionSize, 2); // increment PC
-
+        RegisterFile.registers["PC"] =  Convert.ToString(Convert.ToInt32(RegisterFile.registers["PC"], 2) + Convert.ToInt32(GlobalConstants.instructionSize, 2), 2); // increment PC
+        
         // receive instruction from MAU, place it in IR
         RegisterFile.registers["MDR"] = MemoryAccessUnit.fetchInstruction(InstructionMappings.RegisterToBinaryCode["MAR"]);
         RegisterFile.registers["IR"] = RegisterFile.registers["MDR"];
@@ -28,8 +29,29 @@ public static class ControlUnit
     {
         // decode instruction into opcode, operands
         string opcode = RegisterFile.registers["MDR"].Substring(0, 5); // translate first 5 bits to instruction name
+
+        /*
+        if(opcode is invalid){
+            place interrupt code in Rn
+            change currentInstruction and currentInstructionType to invalid instruction interupt
+            'return', since 'execute' will make sure next instruction is fetched from interrupt vector table
+        }
+        */
+
+        try {
+            currentInstruction = InstructionMappings.BinaryCodeToInstruction[opcode];
+        } catch (Exception e){
+            currentInstruction = "InvalidInstruction";
+            currentInstructionType = "Interrupt";
+            registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"];
+            return;
+        }
+
         currentInstruction = InstructionMappings.BinaryCodeToInstruction[opcode];
         currentInstructionType = InstructionMappings.InstructionNameToInstructionType[currentInstruction];
+
+        
+
         switch(currentInstructionType)
         {
             case "Arithmetic":
@@ -52,6 +74,29 @@ public static class ControlUnit
 
                 MemoryAccessUnit.prepare(opcode);
             break;
+            case "Branching":
+                int[] segmentSizes3 = {5,5, 22}; // Rd
+                List<string> segmentedBinary3 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes3);
+                registers4["Rd"] = segmentedBinary3[1];
+            break;
+            case "Moving":
+                switch (currentInstruction)
+                {
+                    case "Movi":
+                        int[] segmentSizes4 = {5,5,22}; // Rd, imm22
+                        List<string> segmentedBinary4 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes4);
+                        registers4["Rd"] = segmentedBinary4[1];
+                        registers4["Imm"] = segmentedBinary4[2];
+                    break;
+                    case "Movr":
+                        int[] segmentSizes5 = {5,5,5, 17}; // Rd, Rn
+                        List<string> segmentedBinary5 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes5);
+                        registers4["Rd"] = segmentedBinary5[1];
+                        registers4["Rn"] = segmentedBinary5[2];
+                    break;
+                }
+            break;
+
         }
     }
 
@@ -65,6 +110,42 @@ public static class ControlUnit
             case "Shutdown":
                 Cpu.shutdown();
                 return;
+            case "Interrupt":
+                // Rn will hold the index of the interrupt vector in the table.
+                RegisterFile.registers["PC"] = Convert.ToString(Convert.ToInt32(RegisterFile.registers["IVTP"],2) + Convert.ToInt32(GlobalConstants.instructionSize, 2) * Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2),2);
+            break;
+            case "Branching":
+                switch (currentInstruction)
+                {
+                    case "Jmp":
+                        RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                    break;
+                    case "Jmpe":
+                        if(RegisterFile.registers["FLG"][0] == 1)
+                        {
+                            RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                        }
+                    break;
+                    case "Jmpg":
+                        if(RegisterFile.registers["FLG"][1] == 1)
+                        {
+                            RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+                        }
+                    break;
+                }
+            break;
+            case "Moving":
+                switch(currentInstruction)
+                {
+                    case "Movi":
+                        RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = registers4["Imm"];
+                    break;
+                    case "Movr":
+                        RegisterFile.registers[InstructionMappings.BinaryCodeToRegister["Rd"]] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister["Rn"]]; 
+                    break;
+                }
+                
+            break;
         }
     }
 

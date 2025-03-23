@@ -1,4 +1,4 @@
 public static class GlobalConstants
 {
-      public const int instructionSize = 32; // bits
+      public static string instructionSize = Convert.ToString(32,2); // bits
 }

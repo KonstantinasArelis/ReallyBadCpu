@@ -83,6 +83,57 @@ static class Assembler
                             continue;
                         }
                 break;
+                case "Branching":
+                    switch(nextExpectedThing)
+                        {
+                            case "instructionName":
+                            opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
+                            nextExpectedThing = "Rd";
+
+                            continue;
+
+                            case "Rd":
+                            nextExpectedThing = "instructionName";
+                            Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            binaryOutput += opcode + Rd + "0000000000000000000000";  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + opcode + Rd + "0000000000000000000000");
+                            currentInstructionType = "start";
+                            
+                            continue;
+                        }
+                break;
+                case "Moving":
+                switch (nextExpectedThing)
+                    {
+                        case "instructionName":
+                            opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
+                            nextExpectedThing = "Rd";
+                            continue;
+
+                        case "Rd":
+                            Rd = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            if(InstructionMappings.BinaryCodeToInstruction[opcode] == "Movr"){
+                                nextExpectedThing = "Rn";
+                            } else if (InstructionMappings.BinaryCodeToInstruction[opcode] == "Movi"){
+                                nextExpectedThing = "Imm27";
+                            }
+                            continue;
+                        case "Imm27":
+                            nextExpectedThing = "instructionName";
+                            string imm22 = instructionWord;
+                            binaryOutput += opcode + Rd + imm22;  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + opcode + Rd + imm22);
+                            currentInstructionType = "start";
+                            continue;
+                        case "Rn":
+                            nextExpectedThing = "instructionName";
+                            Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            binaryOutput += opcode + Rd + Rn + "00000000000000000";  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + opcode + Rd + Rn + "00000000000000000");
+                            currentInstructionType = "start";
+                            continue;
+                    }
+                break;
             }
         }
         

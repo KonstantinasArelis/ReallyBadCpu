@@ -14,6 +14,8 @@ public static class RegisterFile
         {"MAR", "0"}, // Memory Address Register
         {"MDR", "0"}, // Memory Data Register
         {"IR", "0"}, // Instruction Register 
+        {"IVTP", "0"}, // Interrupt vector table pointer
+        {"FLG", "000"} // flags (Equal, Greater, Overflow)
     };
 
     public static void PrintAllRegisters()
