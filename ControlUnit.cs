@@ -19,7 +19,7 @@ public static class ControlUnit
         RegisterFile.registers["PC"] =  Convert.ToString(Convert.ToInt32(RegisterFile.registers["PC"], 2) + Convert.ToInt32(GlobalConstants.instructionSize, 2), 2); // increment PC
         
         // receive instruction from MAU, place it in IR
-        RegisterFile.registers["MDR"] = MemoryAccessUnit.fetchInstruction(InstructionMappings.RegisterToBinaryCode["MAR"]);
+        RegisterFile.registers["MDR"] = MemoryAccessUnit.fetch4Bytes(InstructionMappings.RegisterToBinaryCode["MAR"]);
         RegisterFile.registers["IR"] = RegisterFile.registers["MDR"];
 
         Console.WriteLine("Executing: " + RegisterFile.registers["IR"]);
@@ -97,6 +97,7 @@ public static class ControlUnit
                 }
             break;
             case "SoftwareInterrupt":
+                Console.WriteLine("SOFTWARE INTERRUPT");
                 int[] segmentSizes6 = {5,5, 22}; // opcode, Rn
                 List<string> segmentedBinary6 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes6);
                 registers4["Rn"] = segmentedBinary6[1];
@@ -123,16 +124,6 @@ public static class ControlUnit
             case "Shutdown":
                 Cpu.shutdown();
                 return;
-            case "ForcedInterrupt":
-                // Rn will hold the index of the interrupt vector in the table.
-                RegisterFile.registers["PC"] = Convert.ToString(
-                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
-                     + 
-                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
-                     * 
-                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
-                    , 2);
-            break;
             case "Branching":
             RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = Utility.PadLeftToLength(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]], 32);
                 switch (currentInstruction)
@@ -165,15 +156,32 @@ public static class ControlUnit
                     break;
                 }
             break;
-            case "SoftwareInterrupt":
+            case "ForcedInterrupt":
                 // Rn will hold the index of the interrupt vector in the table.
-                RegisterFile.registers["PC"] = Convert.ToString(
+
+                // address of interupt vector
+                RegisterFile.registers["R7"] = Convert.ToString(
                     Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
                      + 
                     Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
                      * 
                     Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
                     , 2);
+
+                // fetch address of interupt vector
+                RegisterFile.registers["PC"] = MemoryAccessUnit.fetch4Bytes(InstructionMappings.RegisterToBinaryCode["R7"]);
+            break;
+            case "SoftwareInterrupt":
+                // address of interupt vector
+                RegisterFile.registers["R7"] = Convert.ToString(
+                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
+                     + 
+                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
+                     * 
+                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
+                    , 2);
+                // fetch address of interupt vector
+                RegisterFile.registers["PC"] = MemoryAccessUnit.fetch4Bytes(InstructionMappings.RegisterToBinaryCode["R7"]);
             break;
         }
     }
@@ -211,13 +219,12 @@ public static class ControlUnit
                 registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;
             case "IllegalMemoryAccess":
-
+                RegisterFile.registers["R5"] = "1"; // Set the interrupt table vector index at R5
+                registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;
             case "IllegalJump":
-                
-            break;
-            case "SoftwareInterrupt":
-                
+                RegisterFile.registers["R5"] = "10"; // Set the interrupt table vector index at R5
+                registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;
         }
     }

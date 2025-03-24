@@ -24,7 +24,7 @@ public static class MemoryAccessUnit
         throw new Exception("MAU tried to perform non MAU operation");
     }
 
-    public static string fetchInstruction(string Rn)
+    public static string fetch4Bytes(string Rn)
     {
         return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8, Convert.ToInt32(GlobalConstants.instructionSize, 2) * 8);
     }
