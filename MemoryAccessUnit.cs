@@ -28,10 +28,12 @@ public static class MemoryAccessUnit {
     }
 
     public static string fetchInstruction(string Rn) {
-        return memory.Substring(
-            Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2),
-            Convert.ToInt32(GlobalConstants.instructionSize, 2)
-        );
+        // return memory.Substring(
+        //     Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2),
+        //     Convert.ToInt32(GlobalConstants.instructionSize, 2)
+        // );
+        uint address = Convert.ToUInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2);
+        return fetchWordString(address);
     }
 
     public static void setMemory(string _memory, int startingBitIndex) {
