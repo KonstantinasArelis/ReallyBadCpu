@@ -27,21 +27,19 @@ public static class ControlUnit
 
     public static void decode()
     {
+        /*
+            Main aim of decode() is to settup Rd, Rn, Ra, Rs and imm fields.
+             Rd, Rn, Ra, Rs store the lookup code of the register. Ex Rd = 00010 means Rd is R2.
+             Imm stores the raw value.
+        */
         // decode instruction into opcode, operands
         string opcode = RegisterFile.registers["MDR"].Substring(0, 5); // translate first 5 bits to instruction name
-
-        /*
-        if(opcode is invalid){
-            place interrupt code in Rn
-            change currentInstruction and currentInstructionType to invalid instruction interupt
-            'return', since 'execute' will make sure next instruction is fetched from interrupt vector table
-        }
-        */
 
         try {
             currentInstruction = InstructionMappings.BinaryCodeToInstruction[opcode];
         } catch (Exception e){
-            interruptRoutine();
+            Console.WriteLine("INVALID INSTRUCTION (bad opcode) INTERRUPT");
+            interruptRoutine("IllegalInstruction");
             return;
         }
 
@@ -67,7 +65,8 @@ public static class ControlUnit
                     var temp3 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Ra"]]];
                     var temp4 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]];
                 } catch (Exception e){
-                    interruptRoutine();
+                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+                    interruptRoutine("IllegalInstruction");
                     return;
                 }
 
@@ -84,7 +83,8 @@ public static class ControlUnit
                     var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                     var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
                 } catch (Exception e){
-                    interruptRoutine();
+                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+                    interruptRoutine("IllegalInstruction");
                     return;
                 }
 
@@ -97,7 +97,8 @@ public static class ControlUnit
                 try {
                     var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                 } catch (Exception e){
-                    interruptRoutine();
+                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+                    interruptRoutine("IllegalInstruction");
                     return;
                 }
             break;
@@ -112,7 +113,8 @@ public static class ControlUnit
                         try {
                             var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                         } catch (Exception e){
-                            interruptRoutine();
+                            Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+                            interruptRoutine("IllegalInstruction");
                             return;
                         }
                     break;
@@ -125,7 +127,8 @@ public static class ControlUnit
                             var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                             var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
                         } catch (Exception e){
-                            interruptRoutine();
+                            Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+                            interruptRoutine("IllegalInstruction");
                             return;
                         }
                     break;
@@ -137,6 +140,13 @@ public static class ControlUnit
 
     public static void execute()
     {
+        /*
+            The aim of execute() is to actually perform work. 
+            Arithemtic instructions are prepared in the decode stage. That is to simulate the way cpu works, but can be simplified.
+            currentInstructionType Shutdown is a simplification to quit the program. It means the cpu lost power.
+            Memory processing instructions perform their execute stage in memoryAccessAndReadBack()
+        */
+
         switch(currentInstructionType)
         {
             case "Arithmetic":
@@ -147,10 +157,16 @@ public static class ControlUnit
                 return;
             case "Interrupt":
                 // Rn will hold the index of the interrupt vector in the table.
-                RegisterFile.registers["PC"] = Convert.ToString(Convert.ToInt32(RegisterFile.registers["IVTP"],2) * 8 + Convert.ToInt32(GlobalConstants.instructionSize, 2) * Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2),2);
+                RegisterFile.registers["PC"] = Convert.ToString(
+                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) * 8 // interrupt vector table pointer
+                     + 
+                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
+                     * 
+                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
+                    , 2);
             break;
             case "Branching":
-            RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = MemoryAccessUnit.PadLeftToLength(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]], 32);
+            RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = Utility.PadLeftToLength(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]], 32);
                 switch (currentInstruction)
                 {
                     case "Jmp":
@@ -174,7 +190,6 @@ public static class ControlUnit
                 switch(currentInstruction)
                 {
                     case "Movi":
-                        
                         RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]] = registers4["Imm"];
                     break;
                     case "Movr":
@@ -205,13 +220,18 @@ public static class ControlUnit
         }
     }
 
-    private static void interruptRoutine()
+    private static void interruptRoutine(string interruptType)
     {
-        currentInstruction = "InvalidInstruction";
-            currentInstructionType = "Interrupt";
-            RegisterFile.registers["R5"] = "0";
-            registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"];
-            Console.WriteLine("INVALID INSTRUCTION INTERRUPT");
-            return;
+        /*
+            This prepares the cpu to perform an interrupt.
+        */
+        switch(interruptType)
+        {
+            case "IllegalInstruction":
+                currentInstructionType = "Interrupt";
+                RegisterFile.registers["R5"] = "0"; // Set the interrupt table vector index at R5
+                registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
+            break;
+        }
     }
 }

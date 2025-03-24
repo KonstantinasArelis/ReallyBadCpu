@@ -115,12 +115,12 @@ public class Assembler
                             if(InstructionMappings.BinaryCodeToInstruction[opcode] == "Movr"){
                                 nextExpectedThing = "Rn";
                             } else if (InstructionMappings.BinaryCodeToInstruction[opcode] == "Movi"){
-                                nextExpectedThing = "Imm27";
+                                nextExpectedThing = "Imm16";
                             }
                             continue;
-                        case "Imm27":
+                        case "Imm16":
                             nextExpectedThing = "instructionName";
-                            string imm16 = MemoryAccessUnit.PadLeftToLength(instructionWord, 16);
+                            string imm16 = Utility.PadLeftToLength(instructionWord, 16);
 
                             binaryOutput += opcode + Rd + imm16 + "000000";
                             Console.WriteLine("Assembler assembled: " + opcode + Rd + imm16 + "000000");
