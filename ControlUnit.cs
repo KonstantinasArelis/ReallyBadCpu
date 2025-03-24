@@ -98,6 +98,10 @@ public static class ControlUnit
             break;
             case "SoftwareInterrupt":
                 Console.WriteLine("SOFTWARE INTERRUPT");
+                if(RegisterFile.registers["Mode"] != "0"){
+                    forcedInterruptRoutine("SupervisorRequest");
+                    return;
+                }
                 int[] segmentSizes6 = {5,5, 22}; // opcode, Rn
                 List<string> segmentedBinary6 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes6);
                 registers4["Rn"] = segmentedBinary6[1];
@@ -218,11 +222,7 @@ public static class ControlUnit
                 RegisterFile.registers["R5"] = "0"; // Set the interrupt table vector index at R5
                 registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;
-            case "IllegalMemoryAccess":
-                RegisterFile.registers["R5"] = "1"; // Set the interrupt table vector index at R5
-                registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
-            break;
-            case "IllegalJump":
+            case "SupervisorRequest":
                 RegisterFile.registers["R5"] = "10"; // Set the interrupt table vector index at R5
                 registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;

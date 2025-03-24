@@ -14,7 +14,7 @@ public static class RegisterFile
         {"MAR", "0"}, // Memory Address Register
         {"MDR", "0"}, // Memory Data Register
         {"IR", "0"}, // Instruction Register 
-        {"IVTP", "1010000"}, // Interrupt vector table pointer
+        {"IVTP", "1100100"}, // Interrupt vector table pointer
         {"FLG", "000"}, // flags (Equal, Greater, Overflow)
         {"Mode", "0"}, // 0 - real mode, 1 - virtual mode
     };
