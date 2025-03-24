@@ -135,6 +135,22 @@ public class Assembler
                             continue;
                     }
                 break;
+                case "SoftwareInterrupt":
+                switch (nextExpectedThing)
+                    {
+                        case "instructionName":
+                            opcode = InstructionMappings.InstructionToBinaryCode[instructionWord];
+                            nextExpectedThing = "Rn";
+                            continue;
+                        case "Rn":
+                            nextExpectedThing = "instructionName";
+                            Rn = InstructionMappings.RegisterToBinaryCode[instructionWord];
+                            binaryOutput += opcode + Rn + "0000000000000000000000";  // padding to bloat to 32 bits
+                            Console.WriteLine("Assembler assembled: " + opcode + Rn + "0000000000000000000000");
+                            currentInstructionType = "start";
+                            continue;
+                    }
+                break;
             }
         }
         

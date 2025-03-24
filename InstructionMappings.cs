@@ -15,6 +15,7 @@ public static class InstructionMappings
         {"Movi", "01010"},
         {"Halt", "11111"},
         {"Str", "01011"}, // Rd is data (will be padded to 32 bits from the left with 0's), Rn is memory address (byte) of memory.
+        {"Int", "01100"}, // Rn is interupt vector table index
     };
 
     public static readonly Dictionary<string, string> RegisterToBinaryCode = new Dictionary<string, string>()
@@ -47,6 +48,7 @@ public static class InstructionMappings
         {"Jmpg", "Branching"},
         {"Movr", "Moving"},
         {"Movi", "Moving"},
+        {"Int", "SoftwareInterrupt"},
     };
 
     public static readonly Dictionary<string, string> BinaryCodeToInstruction; // Declare reverse dictionary

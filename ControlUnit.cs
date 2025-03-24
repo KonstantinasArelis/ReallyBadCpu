@@ -2,10 +2,10 @@ public static class ControlUnit
 {
     private static Dictionary<string, string> registers4 = new Dictionary<string, string>()
     {
-        {"Rd", "0"}, // destination register pointer
-        {"Rn", "0"}, // operand 1 register pointer
-        {"Ra", "0"}, // ??
-        {"Rs", "0"}, // operand 2 register pointer
+        {"Rd", "00000"}, // destination register pointer
+        {"Rn", "00000"}, // operand 1 register pointer
+        {"Ra", "00000"}, // ??
+        {"Rs", "00000"}, // operand 2 register pointer
         {"Imm", "0"},
     };
 
@@ -39,7 +39,7 @@ public static class ControlUnit
             currentInstruction = InstructionMappings.BinaryCodeToInstruction[opcode];
         } catch (Exception e){
             Console.WriteLine("INVALID INSTRUCTION (bad opcode) INTERRUPT");
-            interruptRoutine("IllegalInstruction");
+            forcedInterruptRoutine("IllegalInstruction");
             return;
         }
 
@@ -47,7 +47,6 @@ public static class ControlUnit
         currentInstructionType = InstructionMappings.InstructionNameToInstructionType[currentInstruction];
 
         
-
         switch(currentInstructionType)
         {
             case "Arithmetic":
@@ -58,17 +57,7 @@ public static class ControlUnit
                 registers4["Rn"] = segmentedBinary[2];
                 registers4["Ra"] = segmentedBinary[3];
                 registers4["Rs"] = segmentedBinary[4];
-
-                try {
-                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
-                    var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
-                    var temp3 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Ra"]]];
-                    var temp4 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]];
-                } catch (Exception e){
-                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
-                    interruptRoutine("IllegalInstruction");
-                    return;
-                }
+                try {validateOperands();} catch (Exception e) {return;}; // temporary
 
                 ArithmeticLogicUnit.prepare(opcode);
             break;
@@ -78,15 +67,7 @@ public static class ControlUnit
                 List<string> segmentedBinary2 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes2);
                 registers4["Rd"] = segmentedBinary2[1];
                 registers4["Rn"] = segmentedBinary2[2];
-
-                try {
-                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
-                    var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
-                } catch (Exception e){
-                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
-                    interruptRoutine("IllegalInstruction");
-                    return;
-                }
+                try {validateOperands();} catch (Exception e) {return;}; // temporary
 
                 MemoryAccessUnit.prepare(opcode);
             break;
@@ -94,13 +75,7 @@ public static class ControlUnit
                 int[] segmentSizes3 = {5,5, 22}; // opcode, Rd
                 List<string> segmentedBinary3 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes3);
                 registers4["Rd"] = segmentedBinary3[1];
-                try {
-                    var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
-                } catch (Exception e){
-                    Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
-                    interruptRoutine("IllegalInstruction");
-                    return;
-                }
+                try {validateOperands();} catch (Exception e) {return;}; // temporary
             break;
             case "Moving":
                 switch (currentInstruction)
@@ -110,31 +85,24 @@ public static class ControlUnit
                         List<string> segmentedBinary4 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes4);
                         registers4["Rd"] = segmentedBinary4[1];
                         registers4["Imm"] = segmentedBinary4[2];
-                        try {
-                            var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
-                        } catch (Exception e){
-                            Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
-                            interruptRoutine("IllegalInstruction");
-                            return;
-                        }
+                        try {validateOperands();} catch (Exception e) {return;}; // temporary
                     break;
                     case "Movr":
                         int[] segmentSizes5 = {5,5,5, 17}; // opcode, Rd, Rn
                         List<string> segmentedBinary5 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes5);
                         registers4["Rd"] = segmentedBinary5[1];
                         registers4["Rn"] = segmentedBinary5[2];
-                        try {
-                            var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
-                            var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
-                        } catch (Exception e){
-                            Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
-                            interruptRoutine("IllegalInstruction");
-                            return;
-                        }
+                        try {validateOperands();} catch (Exception e) {return;}; // temporary
                     break;
                 }
             break;
+            case "SoftwareInterrupt":
+                int[] segmentSizes6 = {5,5, 22}; // opcode, Rn
+                List<string> segmentedBinary6 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes6);
+                registers4["Rn"] = segmentedBinary6[1];
 
+                try {validateOperands();} catch (Exception e) {return;}; // temporary
+            break;
         }
     }
 
@@ -155,10 +123,10 @@ public static class ControlUnit
             case "Shutdown":
                 Cpu.shutdown();
                 return;
-            case "Interrupt":
+            case "ForcedInterrupt":
                 // Rn will hold the index of the interrupt vector in the table.
                 RegisterFile.registers["PC"] = Convert.ToString(
-                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) * 8 // interrupt vector table pointer
+                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
                      + 
                     Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
                      * 
@@ -197,6 +165,16 @@ public static class ControlUnit
                     break;
                 }
             break;
+            case "SoftwareInterrupt":
+                // Rn will hold the index of the interrupt vector in the table.
+                RegisterFile.registers["PC"] = Convert.ToString(
+                    Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
+                     + 
+                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
+                     * 
+                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
+                    , 2);
+            break;
         }
     }
 
@@ -220,18 +198,41 @@ public static class ControlUnit
         }
     }
 
-    private static void interruptRoutine(string interruptType)
+    private static void forcedInterruptRoutine(string interruptType)
     {
         /*
             This prepares the cpu to perform an interrupt.
         */
+        currentInstructionType = "ForcedInterrupt";
         switch(interruptType)
         {
             case "IllegalInstruction":
-                currentInstructionType = "Interrupt";
                 RegisterFile.registers["R5"] = "0"; // Set the interrupt table vector index at R5
                 registers4["Rn"] = InstructionMappings.RegisterToBinaryCode["R5"]; // Set R5 to be Rn
             break;
+            case "IllegalMemoryAccess":
+
+            break;
+            case "IllegalJump":
+                
+            break;
+            case "SoftwareInterrupt":
+                
+            break;
+        }
+    }
+
+    private static void validateOperands(){
+        // maybe setters would help here?
+        try {
+            var temp1 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
+            var temp2 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]];
+            var temp3 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Ra"]]];
+            var temp4 = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]];
+        } catch (Exception e){
+            Console.WriteLine("INVALID INSTRUCTION (bad operand) INTERRUPT");
+            forcedInterruptRoutine("IllegalInstruction");
+            throw new Exception();
         }
     }
 }
