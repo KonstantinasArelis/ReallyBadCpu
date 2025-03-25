@@ -17,7 +17,7 @@ public static class MemoryAccessUnit
         {
             case "Ldr": {
                 int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
-                return memory.Substring(address, GlobalConstants.wordSize * 8);
+                return fetchWord(address);
             }
             case "Str": {
                 int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
@@ -31,7 +31,11 @@ public static class MemoryAccessUnit
 
     public static string fetch4Bytes(string Rn) {
         int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
-        return memory.Substring(address * 8, GlobalConstants.wordSize * 8);
+        return fetchWord(address * 8);
+    }
+    
+    public static string fetchWord(int address) {
+        return memory.Substring(address, GlobalConstants.wordSize * 8);
     }
 
     public static void setMemory(string _memory, int startingByteIndex)
