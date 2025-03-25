@@ -34,7 +34,7 @@ public static class MemoryAccessUnit
     }
     
     public static string fetchWordString(uint address) {
-        return memory.Substring((int)address, GlobalConstants.wordSize * 8);
+        return fetchWord(address).toStringBinary();
     }
     
     public static byte fetchByte(uint address) {
