@@ -5,6 +5,8 @@ public static class ConvertExtensions {
     
     public static int toIntBinary(this string s) => Convert.ToInt32(s, numberBase);
     public static uint toUIntBinary(this string s) => Convert.ToUInt32(s, numberBase);
+    public static byte toByteBinary(this string s) => Convert.ToByte(s, numberBase);
     public static string toStringBinary(this int i) => Convert.ToString(i, numberBase);
     public static string toStringBinary(this uint u) => Convert.ToString(u, numberBase);
+    public static string toStringBinary(this byte b) => Convert.ToString(b, numberBase);
 }

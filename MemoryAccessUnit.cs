@@ -38,7 +38,7 @@ public static class MemoryAccessUnit
     }
     
     public static byte fetchByte(uint address) {
-        return Convert.ToByte(memory.Substring((int)address, 8), 2);
+        return memory.Substring((int)address, 8).toByteBinary();
     }
 
     public static uint fetchWord(uint address) {
