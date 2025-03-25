@@ -18,7 +18,7 @@ public static class ControlUnit
     {
         // signal memory access unit (MAU) -> update PC
         RegisterFile.registers["MAR"] =  RegisterFile.registers["PC"]; // update MAR
-        RegisterFile.registers["PC"] =  Convert.ToString(Convert.ToInt32(RegisterFile.registers["PC"], 2) + Convert.ToInt32(GlobalConstants.instructionSize, 2), 2); // increment PC
+        RegisterFile.registers["PC"] =  Convert.ToString(Convert.ToInt32(RegisterFile.registers["PC"], 2) + GlobalConstants.wordSize, 2); // increment PC
         
         // receive instruction from MAU, place it in IR
         RegisterFile.registers["MDR"] = MemoryAccessUnit.fetch4Bytes(InstructionMappings.RegisterToBinaryCode["MAR"]);
@@ -177,7 +177,7 @@ public static class ControlUnit
                 RegisterFile.registers["R7"] = Convert.ToString(
                     Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
                      + 
-                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
+                    GlobalConstants.wordSize // instruction size
                      * 
                     Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
                     , 2);
@@ -190,7 +190,7 @@ public static class ControlUnit
                 RegisterFile.registers["R7"] = Convert.ToString(
                     Convert.ToInt32(RegisterFile.registers["IVTP"],2) // interrupt vector table pointer
                      + 
-                    Convert.ToInt32(GlobalConstants.instructionSize, 2) // instruction size
+                    GlobalConstants.wordSize // instruction size
                      * 
                     Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2) // interrupt index (Rn is used, since user interrupts have to have opperand field)
                     , 2);

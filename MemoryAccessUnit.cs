@@ -15,7 +15,7 @@ public static class MemoryAccessUnit
         switch (instruction)
         {
             case "Ldr":
-                return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2), Convert.ToInt32(GlobalConstants.instructionSize, 2) * 8);
+                return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2), GlobalConstants.wordSize * 8);
             case "Str":
                 memory = ReplaceStringPart(memory, RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rd]], Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8);
                 return "";
@@ -26,7 +26,7 @@ public static class MemoryAccessUnit
 
     public static string fetch4Bytes(string Rn)
     {
-        return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8, Convert.ToInt32(GlobalConstants.instructionSize, 2) * 8);
+        return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8, GlobalConstants.wordSize * 8);
     }
 
     public static void setMemory(string _memory, int startingByteIndex)
