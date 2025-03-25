@@ -16,7 +16,7 @@ public static class MemoryAccessUnit
         switch (instruction)
         {
             case "Ldr": {
-                int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
+                uint address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toUIntBinary();
                 return fetchWord(address);
             }
             case "Str": {
@@ -24,20 +24,19 @@ public static class MemoryAccessUnit
                 memory = ReplaceStringPart(memory, RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rd]], address * 8);
                 return "";
             }
-            
         }
         throw new Exception("MAU tried to perform non MAU operation");
     }
 
     public static string fetch4Bytes(string Rn) {
-        int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
+        uint address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toUIntBinary();
         return fetchWord(address * 8);
     }
     
-    public static string fetchWord(int address) {
-        return memory.Substring(address, GlobalConstants.wordSize * 8);
+    public static string fetchWord(uint address) {
+        return memory.Substring((int)address, GlobalConstants.wordSize * 8);
     }
-
+    
     public static void setMemory(string _memory, int startingByteIndex)
     {
         memory = ReplaceStringPart(memory, _memory, startingByteIndex * 8);
