@@ -1,4 +1,5 @@
 using System.Text;
+using reallyBadCpu;
 
 public static class MemoryAccessUnit
 {
@@ -14,19 +15,23 @@ public static class MemoryAccessUnit
     {
         switch (instruction)
         {
-            case "Ldr":
-                return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2), GlobalConstants.wordSize * 8);
-            case "Str":
-                memory = ReplaceStringPart(memory, RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rd]], Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8);
+            case "Ldr": {
+                int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
+                return memory.Substring(address, GlobalConstants.wordSize * 8);
+            }
+            case "Str": {
+                int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
+                memory = ReplaceStringPart(memory, RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rd]], address * 8);
                 return "";
+            }
             
         }
         throw new Exception("MAU tried to perform non MAU operation");
     }
 
-    public static string fetch4Bytes(string Rn)
-    {
-        return memory.Substring(Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]], 2) * 8, GlobalConstants.wordSize * 8);
+    public static string fetch4Bytes(string Rn) {
+        int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
+        return memory.Substring(address * 8, GlobalConstants.wordSize * 8);
     }
 
     public static void setMemory(string _memory, int startingByteIndex)
