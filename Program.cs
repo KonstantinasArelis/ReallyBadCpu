@@ -17,8 +17,8 @@ string assemblerInput3 = "Usr Movi R0 1 Int R0"; // Call int 1 software interrup
 Assembler assembler3 = new Assembler();
 MemoryAccessUnit.setMemory(assembler3.assemble(assemblerInput3), 60);
 
-// Setup infinite counter at int 1. R3 will be incremented by 1 indefinitely.
-string assemblerInput4 = "Movi R4 11000000 Movi R2 1 Add R3 R2 R0 R3 Jmp R4";
+// Setup counter. R3 will be incremented by 1.
+string assemblerInput4 = "Movi R0 111 Movi R4 11000000 Movi R2 1 Add R3 R2 R0 R3 Cmp R0 R3 Jmpg R4 Movi R0 10 Int R0";
 Assembler assembler4 = new Assembler();
 MemoryAccessUnit.setMemory(assembler4.assemble(assemblerInput4), 192);
 

@@ -51,6 +51,7 @@ public static class InstructionMappings
         {"Movi", "Moving"},
         {"Int", "SoftwareInterrupt"},
         {"Usr", "SwitchToUserMode"},
+        {"Cmp", "Compare"},
     };
 
     public static readonly Dictionary<string, string> BinaryCodeToInstruction; // Declare reverse dictionary

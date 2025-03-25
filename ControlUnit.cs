@@ -111,6 +111,13 @@ public static class ControlUnit
 
                 try {validateOperands();} catch (Exception e) {return;}; // temporary
             break;
+            case "Compare":
+                int[] segmentSizes7 = {5,5,5, 17}; // opcode, Rn, Rs
+                List<string> segmentedBinary7 = StringSplitter.SplitStringByLengths(RegisterFile.registers["IR"], segmentSizes7);
+                registers4["Rn"] = segmentedBinary7[1];
+                registers4["Rs"] = segmentedBinary7[2];
+                try {validateOperands();} catch (Exception e) {return;}; // temporary
+            break;
         }
     }
 
@@ -139,13 +146,13 @@ public static class ControlUnit
                         RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                     break;
                     case "Jmpe":
-                        if(RegisterFile.registers["FLG"][0] == 1)
+                        if(RegisterFile.registers["FLG"] == "100") // this has to be changed
                         {
                             RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                         }
                     break;
                     case "Jmpg":
-                        if(RegisterFile.registers["FLG"][1] == 1)
+                        if(RegisterFile.registers["FLG"] == "010") // this has to be changed
                         {
                             RegisterFile.registers["PC"] = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rd"]]];
                         }
@@ -192,6 +199,21 @@ public static class ControlUnit
             break;
             case "SwitchToUserMode":
                 RegisterFile.registers["Mode"] = "1";
+            break;
+            case "Compare":
+                if(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]] == RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]])
+                {
+                    RegisterFile.registers["FLG"] = "100"; // this has to be changed
+                }
+                else if(
+                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rn"]]],2)
+                     > 
+                    Convert.ToInt32(RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[registers4["Rs"]]],2))
+                {
+                    RegisterFile.registers["FLG"] = "010"; // this has to be changed
+                } else {
+                    RegisterFile.registers["FLG"] = "000"; // this has to be changed
+                }
             break;
         }
     }
