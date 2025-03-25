@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 public static class ControlUnit
 {
     private static Dictionary<string, string> registers4 = new Dictionary<string, string>()
@@ -99,6 +101,7 @@ public static class ControlUnit
             case "SoftwareInterrupt":
                 Console.WriteLine("SOFTWARE INTERRUPT");
                 if(RegisterFile.registers["Mode"] != "0"){
+                    Console.WriteLine("Forced supervisor request interrupt");
                     forcedInterruptRoutine("SupervisorRequest");
                     return;
                 }
@@ -187,6 +190,9 @@ public static class ControlUnit
                 // fetch address of interupt vector
                 RegisterFile.registers["PC"] = MemoryAccessUnit.fetch4Bytes(InstructionMappings.RegisterToBinaryCode["R7"]);
             break;
+            case "SwitchToUserMode":
+                RegisterFile.registers["Mode"] = "1";
+            break;
         }
     }
 
@@ -216,6 +222,7 @@ public static class ControlUnit
             This prepares the cpu to perform an interrupt.
         */
         currentInstructionType = "ForcedInterrupt";
+        RegisterFile.registers["Mode"] = "0";
         switch(interruptType)
         {
             case "IllegalInstruction":

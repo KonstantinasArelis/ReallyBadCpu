@@ -13,7 +13,7 @@ string assemblerInput5 = "Movi R0 11100000 Movi R1 1101110 Str R0 R1 Movi R0 111
 Assembler assembler5 = new Assembler();
 MemoryAccessUnit.setMemory(assembler5.assemble(assemblerInput5), 36);
 
-string assemblerInput3 = "Movi R0 1 Int R0"; // Call int 1 software interrupt
+string assemblerInput3 = "Usr Movi R0 1 Int R0"; // Call int 1 software interrupt
 Assembler assembler3 = new Assembler();
 MemoryAccessUnit.setMemory(assembler3.assemble(assemblerInput3), 60);
 
