@@ -17,7 +17,7 @@ public static class MemoryAccessUnit
         {
             case "Ldr": {
                 uint address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toUIntBinary();
-                return fetchWord(address);
+                return fetchWordString(address);
             }
             case "Str": {
                 int address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toIntBinary();
@@ -30,11 +30,22 @@ public static class MemoryAccessUnit
 
     public static string fetch4Bytes(string Rn) {
         uint address = RegisterFile.registers[InstructionMappings.BinaryCodeToRegister[Rn]].toUIntBinary();
-        return fetchWord(address * 8);
+        return fetchWordString(address * 8);
     }
     
-    public static string fetchWord(uint address) {
+    public static string fetchWordString(uint address) {
         return memory.Substring((int)address, GlobalConstants.wordSize * 8);
+    }
+    
+    public static byte fetchByte(uint address) {
+        return Convert.ToByte(memory.Substring((int)address, 8), 2);
+    }
+
+    public static uint fetchWord(uint address) {
+        //Converting string->uint->int->string->uint...etc just when accessing memory looks stupid
+        //but I plan for the internal memory in the memory access unit to be stored as bytes
+        //so having a base API that uses numeric types makes sense
+        return memory.Substring((int)address, GlobalConstants.wordSize * 8).toUIntBinary();
     }
     
     public static void setMemory(string _memory, int startingByteIndex)
